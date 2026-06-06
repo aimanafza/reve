@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Commis — Preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --surface: #111111;
+    --border: #1f1f1f;
+    --text-primary: #f0ede8;
+    --text-secondary: #6b6b6b;
+    --accent: #e8e0d4;
+    --danger: #c0392b;
+    --success: #2ecc71;
+    --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--bg); color: var(--text-primary); font-family: 'DM Sans', sans-serif; font-size: 14px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: var(--bg); } ::-webkit-scrollbar-thumb { background: var(--border); }
+  a { color: inherit; text-decoration: none; }
+  button { cursor: pointer; font-family: 'JetBrains Mono', monospace; }
+  textarea, input { font-family: 'DM Sans', sans-serif; }
+
+  @keyframes fadeIn { from { opacity:0 } to { opacity:1 } }
+  @keyframes scaleIn { from { opacity:0; transform:scale(0.97) } to { opacity:1; transform:scale(1) } }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  .fade-in { animation: fadeIn 400ms var(--ease) forwards; }
+  .scale-in { animation: scaleIn 300ms var(--ease) forwards; }
+
+  /* ── NAV ── */
+  nav { display:flex; align-items:center; justify-content:space-between; padding:18px 48px; border-bottom:0.5px solid var(--border); position:sticky; top:0; background:rgba(10,10,10,0.92); backdrop-filter:blur(8px); z-index:100; }
+  .logo { font-family:'JetBrains Mono',monospace; font-size:13px; letter-spacing:0.3em; text-transform:uppercase; color:var(--text-primary); }
+  .nav-link { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-secondary); transition:color 150ms; }
+  .nav-link:hover { color:var(--text-primary); }
+
+  /* ── PAGES ── */
+  .page { display:none; }
+  .page.active { display:block; }
+
+  /* ── HERO ── */
+  .hero { position:relative; min-height:100vh; display:flex; flex-direction:column; justify-content:center; padding:96px 48px; overflow:hidden; }
+  .hero-bg { position:absolute; inset:0; z-index:0; }
+  .hero-bg img { width:100%; height:100%; object-fit:cover; opacity:0.13; filter:saturate(0.3); }
+  .hero-bg-grad { position:absolute; inset:0; background: linear-gradient(to right, var(--bg) 30%, transparent 70%, var(--bg) 100%), linear-gradient(to top, var(--bg) 10%, transparent 60%); }
+  .hero-content { position:relative; z-index:1; max-width:700px; }
+  .hero-eyebrow { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-secondary); margin-bottom:28px; }
+  h1.display { font-family:'Cormorant Garamond',serif; font-size:clamp(48px,6vw,80px); font-weight:300; line-height:1.05; color:var(--text-primary); margin-bottom:28px; letter-spacing:-0.01em; }
+  h1.display em { font-style:italic; }
+  .hero-sub { font-size:15px; color:var(--text-secondary); max-width:460px; margin-bottom:44px; line-height:1.7; }
+  .btn-row { display:flex; gap:16px; align-items:center; flex-wrap:wrap; }
+  .btn-primary { background:var(--accent); color:var(--bg); border:none; padding:14px 28px; font-size:12px; letter-spacing:0.07em; transition:opacity 200ms; }
+  .btn-primary:hover { opacity:0.82; }
+  .btn-ghost { background:transparent; color:var(--text-secondary); border:0.5px solid var(--border); padding:14px 28px; font-size:12px; letter-spacing:0.07em; transition:border-color 150ms, color 150ms; }
+  .btn-ghost:hover { border-color:var(--text-secondary); color:var(--text-primary); }
+  .dots { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--border); letter-spacing:0.1em; position:absolute; bottom:48px; left:0; right:0; padding:0 48px; overflow:hidden; white-space:nowrap; }
+
+  /* ── SECTION WRAPPER ── */
+  .section { padding:80px 48px; max-width:1200px; margin:0 auto; }
+  .section-label { display:flex; align-items:center; gap:16px; margin-bottom:48px; }
+  .section-label span { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-secondary); white-space:nowrap; }
+  .section-label-line { flex:1; height:0.5px; background:var(--border); }
+
+  /* ── DEMO ── */
+  .demo-grid { display:grid; grid-template-columns:1fr 1fr; border:0.5px solid var(--border); }
+  @media(max-width:768px){ .demo-grid{ grid-template-columns:1fr; } }
+  .demo-image-pane { position:relative; aspect-ratio:1; background:var(--surface); overflow:hidden; }
+  .demo-image-pane img { width:100%; height:100%; object-fit:cover; filter:saturate(0.7) contrast(1.05); }
+  .demo-loading { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; }
+  .demo-loading .spinner { font-family:'JetBrains Mono',monospace; font-size:32px; color:var(--text-secondary); }
+  .demo-loading .lbl { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-secondary); }
+  .demo-history { position:absolute; bottom:0; left:0; right:0; padding:12px; background:linear-gradient(to top, rgba(10,10,10,0.9), transparent); }
+  .demo-history .entry { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-secondary); }
+  .demo-input-pane { display:flex; flex-direction:column; justify-content:space-between; padding:32px; border-left:0.5px solid var(--border); gap:24px; }
+  .demo-input-pane h3 { font-size:13px; color:var(--text-secondary); margin-bottom:4px; }
+  .demo-hint { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-secondary); line-height:1.7; margin-bottom:24px; }
+  .demo-field { border-bottom:0.5px solid var(--border); padding-bottom:12px; }
+  .demo-field input { width:100%; background:transparent; border:none; outline:none; color:var(--text-primary); font-size:14px; caret-color:var(--accent); }
+  .demo-field input::placeholder { color:var(--text-secondary); }
+  .demo-error { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--danger); margin-top:8px; }
+  .btn-generate { background:transparent; border:0.5px solid var(--border); color:var(--text-secondary); padding:10px 20px; font-size:11px; letter-spacing:0.05em; margin-top:16px; transition:all 150ms; }
+  .btn-generate:hover:not(:disabled) { background:var(--accent); color:var(--bg); border-color:var(--accent); }
+  .btn-generate:disabled { opacity:0.4; cursor:not-allowed; }
+  .suggestions-label { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-secondary); margin-bottom:10px; }
+  .chips { display:flex; flex-wrap:wrap; gap:8px; }
+  .chip { background:transparent; border:0.5px solid var(--border); color:var(--text-secondary); padding:6px 12px; font-size:10px; font-family:'JetBrains Mono',monospace; transition:all 150ms; }
+  .chip:hover { border-color:var(--text-secondary); color:var(--text-primary); }
+
+  /* ── HOW IT WORKS ── */
+  .how-grid { display:grid; grid-template-columns:repeat(3,1fr); border:0.5px solid var(--border); }
+  @media(max-width:640px){ .how-grid{ grid-template-columns:1fr; } }
+  .how-card { padding:32px; background:var(--surface); }
+  .how-card:not(:last-child) { border-right:0.5px solid var(--border); }
+  .how-num { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-secondary); margin-bottom:20px; }
+  .how-title { font-family:'Cormorant Garamond',serif; font-size:22px; font-weight:400; color:var(--text-primary); margin-bottom:12px; }
+  .how-body { font-size:13px; color:var(--text-secondary); line-height:1.7; }
+
+  /* ── FOR WHO ── */
+  .for-grid { display:grid; grid-template-columns:1fr 1fr; border:0.5px solid var(--border); }
+  @media(max-width:640px){ .for-grid{ grid-template-columns:1fr; } }
+  .for-col { padding:40px; }
+  .for-col:first-child { border-right:0.5px solid var(--border); }
+  .for-label { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-secondary); margin-bottom:28px; }
+  .for-items { display:flex; flex-direction:column; gap:18px; }
+  .for-item-head { font-size:13px; color:var(--text-primary); margin-bottom:3px; }
+  .for-item-body { font-size:12px; color:var(--text-secondary); line-height:1.6; }
+
+  /* ── CTA ── */
+  .cta { text-align:center; padding:96px 48px; max-width:600px; margin:0 auto; }
+  .cta h2 { font-family:'Cormorant Garamond',serif; font-size:clamp(36px,5vw,56px); font-weight:300; margin-bottom:20px; line-height:1.1; }
+  .cta h2 em { font-style:italic; }
+  .cta p { font-size:13px; color:var(--text-secondary); margin-bottom:36px; }
+
+  /* ── FOOTER ── */
+  footer { border-top:0.5px solid var(--border); padding:28px 48px; }
+  .footer-blocks { font-family:'JetBrains Mono',monospace; font-size:10px; color:rgba(31,31,31,0.8); letter-spacing:0; margin-bottom:20px; overflow:hidden; white-space:nowrap; }
+  .footer-row { display:flex; justify-content:space-between; font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-secondary); }
+
+  /* ── KEY PROMPT ── */
+  .key-banner { background:var(--surface); border-bottom:0.5px solid var(--border); padding:10px 48px; display:flex; align-items:center; gap:16px; }
+  .key-banner label { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-secondary); white-space:nowrap; }
+  .key-banner input { flex:1; background:transparent; border:none; outline:none; color:var(--text-primary); font-family:'JetBrains Mono',monospace; font-size:11px; }
+  .key-banner .key-hint { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-secondary); white-space:nowrap; }
+  .key-status { font-family:'JetBrains Mono',monospace; font-size:10px; }
+  .key-status.ok { color:var(--success); }
+  .key-status.empty { color:var(--text-secondary); }
+
+  /* ──────────────────────────────────────────────
+     CANVAS PAGE
+  ────────────────────────────────────────────── */
+  .canvas-page { display:none; flex-direction:column; height:100vh; }
+  .canvas-page.active { display:flex; }
+
+  .topbar { display:flex; align-items:center; justify-content:space-between; padding:12px 24px; border-bottom:0.5px solid var(--border); flex-shrink:0; }
+  .topbar-left { display:flex; align-items:center; gap:20px; }
+  .topbar-back { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-secondary); background:none; border:none; cursor:pointer; }
+  .topbar-back:hover { color:var(--text-primary); }
+  .topbar-title { font-family:'Cormorant Garamond',serif; font-size:16px; }
+  .topbar-meta { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-secondary); }
+  .topbar-right { display:flex; align-items:center; gap:16px; }
+  .status-pill { display:flex; align-items:center; gap:6px; }
+  .status-dot { font-size:10px; }
+  .status-text { font-family:'JetBrains Mono',monospace; font-size:10px; }
+  .btn-approve { font-family:'JetBrains Mono',monospace; font-size:11px; padding:8px 18px; border:0.5px solid var(--success); color:var(--success); background:transparent; transition:all 150ms; }
+  .btn-approve:hover { background:var(--success); color:var(--bg); }
+
+  .canvas-body { display:flex; flex:1; overflow:hidden; }
+
+  /* Sidebar */
+  .sidebar { width:200px; flex-shrink:0; border-right:0.5px solid var(--border); overflow-y:auto; display:flex; flex-direction:column; }
+  .sidebar-section { padding:16px; }
+  .sidebar-section-label { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-secondary); margin-bottom:14px; }
+  .version-item { display:flex; gap:10px; align-items:flex-start; margin-bottom:14px; cursor:pointer; }
+  .version-dot-col { display:flex; flex-direction:column; align-items:center; gap:3px; padding-top:3px; }
+  .vdot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+  .vline { width:1px; flex:1; min-height:18px; background:var(--border); }
+  .version-info {}
+  .version-num { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-primary); }
+  .version-lbl { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-secondary); }
+  .version-ts { font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--text-secondary); opacity:0.6; }
+  .sidebar-divider { height:0.5px; background:var(--border); margin:4px 0; }
+  .ann-item { padding:8px 0; border-bottom:0.5px solid var(--border); cursor:pointer; }
+  .ann-item:last-child { border-bottom:none; }
+  .ann-label { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--accent); margin-bottom:3px; }
+  .ann-text { font-size:11px; color:var(--text-secondary); line-height:1.5; }
+  .ann-accepted { font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--success); margin-top:3px; }
+
+  /* Canvas center */
+  .canvas-center { flex:1; position:relative; overflow:hidden; background:var(--surface); }
+  .canvas-instruction { position:absolute; top:12px; left:12px; z-index:10; background:rgba(10,10,10,0.85); border:0.5px solid var(--border); padding:8px 14px; font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-secondary); backdrop-filter:blur(4px); }
+  .canvas-image { width:100%; height:100%; object-fit:contain; user-select:none; filter:saturate(0.8); pointer-events:none; }
+  .annotation-box { position:absolute; border:1px dashed var(--danger); cursor:pointer; transition:border-color 150ms; }
+  .annotation-box.active { border-color:var(--accent); }
+  .ann-chip { position:absolute; top:-22px; left:0; font-family:'JetBrains Mono',monospace; font-size:9px; padding:2px 6px; background:var(--danger); color:var(--bg); white-space:nowrap; }
+  .annotation-box.active .ann-chip { background:var(--accent); }
+  .sel-box { position:absolute; border:1px dashed var(--accent); background:rgba(232,224,212,0.06); pointer-events:none; }
+  .preview-overlay { position:absolute; inset:0; background:var(--surface); display:flex; flex-direction:column; z-index:20; }
+  .preview-overlay img { flex:1; width:100%; object-fit:contain; filter:saturate(0.8); }
+  .preview-bar { display:flex; align-items:center; gap:12px; padding:12px 16px; border-top:0.5px solid var(--border); }
+  .preview-bar-note { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-secondary); flex:1; }
+  .btn-accept { font-family:'JetBrains Mono',monospace; font-size:11px; padding:8px 18px; background:var(--success); color:var(--bg); border:none; }
+  .btn-discard { font-family:'JetBrains Mono',monospace; font-size:11px; padding:8px 18px; background:transparent; color:var(--text-secondary); border:0.5px solid var(--border); }
+
+  /* Right edit panel */
+  .edit-panel { width:280px; flex-shrink:0; border-left:0.5px solid var(--border); background:var(--bg); display:flex; flex-direction:column; transform:translateX(100%); transition:transform 300ms var(--ease); position:absolute; right:0; top:0; bottom:0; z-index:30; overflow-y:auto; }
+  .edit-panel.open { transform:translateX(0); }
+  .edit-panel-inner { padding:24px; display:flex; flex-direction:column; height:100%; }
+  .edit-panel-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:24px; }
+  .edit-panel-el-label { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-secondary); margin-bottom:4px; }
+  .edit-panel-el-name { font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--accent); }
+  .edit-panel-close { background:none; border:none; color:var(--text-secondary); font-size:14px; cursor:pointer; padding:0; font-family:'DM Sans',sans-serif; }
+  .edit-panel-close:hover { color:var(--text-primary); }
+  .edit-field-label { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-secondary); margin-bottom:8px; }
+  .edit-textarea { width:100%; background:transparent; border:0.5px solid var(--border); color:var(--text-primary); font-family:'DM Sans',sans-serif; font-size:13px; padding:12px; outline:none; resize:none; line-height:1.6; caret-color:var(--accent); }
+  .edit-textarea::placeholder { color:var(--text-secondary); }
+  .edit-error { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--danger); border:0.5px solid var(--danger); padding:8px 12px; margin-top:12px; }
+  .btn-gen { width:100%; background:transparent; border:0.5px solid var(--border); color:var(--text-primary); padding:12px; font-size:11px; letter-spacing:0.05em; margin-top:16px; transition:all 150ms; }
+  .btn-gen:hover:not(:disabled) { background:var(--accent); color:var(--bg); border-color:var(--accent); }
+  .btn-gen:disabled { opacity:0.4; cursor:not-allowed; }
+  .preview-actions { display:flex; gap:8px; margin-top:12px; }
+  .preview-actions button { flex:1; padding:10px; font-size:11px; }
+  .edit-panel-note { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-secondary); line-height:1.6; margin-top:auto; padding-top:24px; }
+</style>
+</head>
+<body>
+
+<!-- KEY BANNER -->
+<div class="key-banner" id="keyBanner">
+  <label for="apiKeyInput">REVE_API_KEY</label>
+  <input type="password" id="apiKeyInput" placeholder="paste your key to enable live generation..." />
+  <span class="key-status empty" id="keyStatus">no key — using placeholder images</span>
+</div>
+
+<!-- ══════════════════════════════════════════
+     LANDING PAGE
+══════════════════════════════════════════ -->
+<div class="page active" id="page-landing">
+  <nav>
+    <span class="logo">commis</span>
+    <a class="nav-link" href="#" onclick="showPage('canvas')">open demo canvas →</a>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-bg" id="heroBg">
+      <img id="heroImg"
+        src="https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=1400&q=80"
+        alt="" />
+      <div class="hero-bg-grad"></div>
+    </div>
+    <div class="hero-content fade-in">
+      <div class="hero-eyebrow" id="heroEyebrow">01 — a new kind of brief</div>
+      <h1 class="display">
+        The space between<br>
+        <em>what you imagine</em><br>
+        and what gets made.
+      </h1>
+      <p class="hero-sub">
+        Commis gives clients a visual language to collaborate with artists — powered by Reve.
+        No more "I'll know it when I see it."
+      </p>
+      <div class="btn-row">
+        <button class="btn-primary" onclick="showPage('canvas')">commission work</button>
+        <button class="btn-ghost">join as artist</button>
+      </div>
+    </div>
+    <div class="dots" id="heroDots"></div>
+  </section>
+
+  <!-- Interactive Demo -->
+  <div class="section">
+    <div class="section-label">
+      <span>02 — interactive demo</span>
+      <div class="section-label-line"></div>
+    </div>
+    <div class="demo-grid">
+      <!-- Image pane -->
+      <div class="demo-image-pane" id="demoImagePane">
+        <img id="demoImage"
+          src="https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=800&q=85"
+          alt="commission artwork" class="fade-in" />
+        <div class="demo-loading" id="demoLoading" style="display:none">
+          <div class="spinner" id="demoSpinner">⠋</div>
+          <div class="lbl">generating preview</div>
+        </div>
+        <div class="demo-history" id="demoHistory" style="display:none"></div>
+      </div>
+      <!-- Input pane -->
+      <div class="demo-input-pane">
+        <div>
+          <h3>leave a visual note</h3>
+          <p class="demo-hint">Try: "warmer tones" or "less structured" or "add texture to the fabric"</p>
+          <div class="demo-field">
+            <input type="text" id="demoInput" placeholder="describe what you want to change..." />
+          </div>
+          <div class="demo-error" id="demoError" style="display:none"></div>
+          <button class="btn-generate" id="demoBtn" onclick="runDemoEdit()" disabled>generate preview →</button>
+        </div>
+        <div>
+          <div class="suggestions-label">suggestions</div>
+          <div class="chips">
+            <button class="chip" onclick="setDemoInput('warmer tones')">warmer tones</button>
+            <button class="chip" onclick="setDemoInput('less structured')">less structured</button>
+            <button class="chip" onclick="setDemoInput('add texture to the fabric')">add texture to the fabric</button>
+            <button class="chip" onclick="setDemoInput('softer silhouette')">softer silhouette</button>
+            <button class="chip" onclick="setDemoInput('more dramatic shadows')">more dramatic shadows</button>
+            <button class="chip" onclick="setDemoInput('ivory instead of white')">ivory instead of white</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- How it works -->
+  <div class="section">
+    <div class="section-label">
+      <span>03 — how it works</span>
+      <div class="section-label-line"></div>
+    </div>
+    <div class="how-grid">
+      <div class="how-card">
+        <div class="how-num">01</div>
+        <div class="how-title">Artist uploads</div>
+        <div class="how-body">Initial work in progress. A sketch, a mockup, a first draft — whatever stage they're at.</div>
+      </div>
+      <div class="how-card">
+        <div class="how-num">02</div>
+        <div class="how-title">Client reacts</div>
+        <div class="how-body">Click any region of the artwork and propose changes visually, powered by Reve. No more vague words.</div>
+      </div>
+      <div class="how-card" style="border-right:none">
+        <div class="how-num">03</div>
+        <div class="how-title">Work evolves</div>
+        <div class="how-body">Every revision is tracked. The artist sees exactly what you mean. The final piece is always theirs.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- For who -->
+  <div class="section">
+    <div class="for-grid">
+      <div class="for-col">
+        <div class="for-label">for artists</div>
+        <div class="for-items">
+          <div><div class="for-item-head">Upload work in progress</div><div class="for-item-body">Share early — clients can respond meaningfully at any stage.</div></div>
+          <div><div class="for-item-head">See exactly what clients mean</div><div class="for-item-body">Not just what they say. Reve-powered visual edits clarify everything.</div></div>
+          <div><div class="for-item-head">Keep creative ownership</div><div class="for-item-body">Every final deliverable is yours. Commis is scaffolding, not interference.</div></div>
+          <div><div class="for-item-head">Get paid on approval</div><div class="for-item-body">Clear milestones. No ambiguity about when the work is done.</div></div>
+        </div>
+      </div>
+      <div class="for-col">
+        <div class="for-label">for clients</div>
+        <div class="for-items">
+          <div><div class="for-item-head">No more "I'll know it when I see it"</div><div class="for-item-body">Commis gives you a visual language. Show, don't tell.</div></div>
+          <div><div class="for-item-head">Propose edits visually</div><div class="for-item-body">Click a region, type what you want, see Reve generate the change.</div></div>
+          <div><div class="for-item-head">Review revision history</div><div class="for-item-body">Every version is preserved. Nothing gets lost.</div></div>
+          <div><div class="for-item-head">Approve and download</div><div class="for-item-body">Clear approval state. Download final files when it's done.</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta">
+    <h2>Visual feedback.<br><em>Not verbal guessing.</em></h2>
+    <p>Commissions that speak for themselves.</p>
+    <button class="btn-primary" onclick="showPage('canvas')">try the canvas →</button>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-blocks">▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓</div>
+    <div class="footer-row">
+      <span>commis</span>
+      <span>made at reve makeathon 2026 · palo alto</span>
+      <span>your vision. their craft.</span>
+    </div>
+  </footer>
+</div>
+
+<!-- ══════════════════════════════════════════
+     CANVAS PAGE
+══════════════════════════════════════════ -->
+<div class="canvas-page" id="page-canvas">
+  <!-- Top bar -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <button class="topbar-back" onclick="showPage('landing')">← commis</button>
+      <span style="color:var(--border)">·</span>
+      <span class="topbar-title">"Custom Evening Dress"</span>
+      <span style="color:var(--border)">·</span>
+      <span class="topbar-meta">v3 of 5</span>
+      <span style="color:var(--border)">·</span>
+      <span class="topbar-meta">2 pending client edits</span>
+    </div>
+    <div class="topbar-right">
+      <div class="status-pill">
+        <span class="status-dot" style="color:var(--success)">●</span>
+        <span class="status-text" style="color:var(--success)">LIVE</span>
+      </div>
+      <button class="btn-approve">Approve</button>
+    </div>
+  </div>
+
+  <div class="canvas-body">
+    <!-- Left sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">revision timeline</div>
+        <div class="version-item" style="opacity:0.5">
+          <div class="version-dot-col"><div class="vdot" style="background:var(--border)"></div><div class="vline"></div></div>
+          <div class="version-info"><div class="version-num">v1</div><div class="version-lbl">Initial sketch</div><div class="version-ts">Jun 1, 14:02</div></div>
+        </div>
+        <div class="version-item" style="opacity:0.5">
+          <div class="version-dot-col"><div class="vdot" style="background:var(--border)"></div><div class="vline"></div></div>
+          <div class="version-info"><div class="version-num">v2</div><div class="version-lbl">2 edits applied</div><div class="version-ts">Jun 2, 09:15</div></div>
+        </div>
+        <div class="version-item">
+          <div class="version-dot-col"><div class="vdot" style="background:var(--accent)"></div></div>
+          <div class="version-info"><div class="version-num">v3</div><div class="version-lbl">Revised neckline</div><div class="version-ts">Jun 3, 16:44</div></div>
+        </div>
+      </div>
+      <div class="sidebar-divider"></div>
+      <div class="sidebar-section" style="flex:1">
+        <div class="sidebar-section-label">feedback thread</div>
+        <div id="annotationList"></div>
+      </div>
+    </aside>
+
+    <!-- Canvas -->
+    <div class="canvas-center" id="canvasCenter">
+      <div class="canvas-instruction">click + drag to select a region to annotate</div>
+      <img class="canvas-image" id="canvasImage"
+        src="https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=900&q=85"
+        alt="commission artwork" draggable="false" />
+      <div id="annotationLayer"></div>
+      <div id="previewOverlay" class="preview-overlay scale-in" style="display:none">
+        <img id="previewImg" src="" alt="reve preview" />
+        <div class="preview-bar">
+          <span class="preview-bar-note">reve preview — accept to add to revision thread</span>
+          <button class="btn-accept" onclick="acceptPreview()">Accept</button>
+          <button class="btn-discard" onclick="discardPreview()">Discard</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit panel -->
+    <div class="edit-panel" id="editPanel">
+      <div class="edit-panel-inner">
+        <div class="edit-panel-header">
+          <div>
+            <div class="edit-panel-el-label">selected element</div>
+            <div class="edit-panel-el-name" id="editPanelLabel">[region]</div>
+          </div>
+          <button class="edit-panel-close" onclick="closeEditPanel()">✕</button>
+        </div>
+        <div class="edit-field-label">describe what you want</div>
+        <textarea class="edit-textarea" id="editTextarea" rows="4" placeholder="smoother silk, less matte..."></textarea>
+        <div class="edit-error" id="editError" style="display:none"></div>
+        <button class="btn-gen" id="editGenBtn" onclick="generateCanvasPreview()">generate preview →</button>
+        <div class="preview-actions" id="previewActions" style="display:none">
+          <button class="btn-accept" onclick="acceptPreview()">Accept</button>
+          <button class="btn-discard" onclick="discardPreview()">Discard</button>
+        </div>
+        <div class="edit-panel-note">the artist will see your visual edit — not just the words.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── State ──────────────────────────────────────────────────────────────
+  let apiKey = '';
+  let demoCurrentImageDataUrl = null; // base64 data URL of current demo image
+  let demoIsLoading = false;
+  let demoEditHistory = [];
+  let spinInterval = null;
+  const spinFrames = ['⠋','⠙','⠹','⠸','⠼','⠴','⠦','⠧','⠇','⠏'];
+  let spinIdx = 0;
+
+  // Canvas state
+  let annotations = [
+    { id:'a1', x:20, y:15, w:30, h:25, label:'neckline', text:'can the neckline be lower and more open?', status:'pending', previewDataUrl:null },
+    { id:'a2', x:10, y:50, w:80, h:35, label:'fabric', text:'what if we tried ivory instead of white?', status:'pending', previewDataUrl:null },
+  ];
+  let activeAnnotationId = null;
+  let pendingSelection = null;
+  let isSelecting = false;
+  let selStart = null;
+  let canvasPreviewDataUrl = null;
+  let canvasGenerating = false;
+
+  // ── Init ───────────────────────────────────────────────────────────────
+  document.getElementById('heroDots').textContent = '·  '.repeat(40);
+
+  // API key input
+  const keyInput = document.getElementById('apiKeyInput');
+  keyInput.addEventListener('input', () => {
+    apiKey = keyInput.value.trim();
+    const status = document.getElementById('keyStatus');
+    if (apiKey) {
+      status.textContent = '✓ key set';
+      status.className = 'key-status ok';
+      document.getElementById('demoBtn').disabled = false;
+    } else {
+      status.textContent = 'no key — using placeholder images';
+      status.className = 'key-status empty';
+      document.getElementById('demoBtn').disabled = true;
+    }
+  });
+
+  // Demo input enable/disable
+  document.getElementById('demoInput').addEventListener('input', (e) => {
+    document.getElementById('demoBtn').disabled = !e.target.value.trim() || !apiKey || demoIsLoading;
+  });
+  document.getElementById('demoInput').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') runDemoEdit();
+  });
+
+  // Render initial annotations
+  renderAnnotations();
+  renderAnnotationList();
+
+  // ── Page nav ──────────────────────────────────────────────────────────
+  function showPage(id) {
+    document.querySelectorAll('.page, .canvas-page').forEach(p => p.classList.remove('active'));
+    if (id === 'canvas') document.getElementById('page-canvas').classList.add('active');
+    else document.getElementById('page-landing').classList.add('active');
+    window.scrollTo(0,0);
+  }
+
+  // ── Demo edit ─────────────────────────────────────────────────────────
+  function setDemoInput(val) {
+    document.getElementById('demoInput').value = val;
+    document.getElementById('demoBtn').disabled = !apiKey;
+  }
+
+  async function runDemoEdit() {
+    const input = document.getElementById('demoInput');
+    const prompt = input.value.trim();
+    if (!prompt || !apiKey || demoIsLoading) return;
+
+    demoIsLoading = true;
+    input.value = '';
+    document.getElementById('demoBtn').disabled = true;
+    document.getElementById('demoError').style.display = 'none';
+    document.getElementById('demoLoading').style.display = 'flex';
+    document.getElementById('demoImage').style.display = 'none';
+
+    startSpin('demoSpinner');
+
+    try {
+      const body = { prompt };
+      if (demoCurrentImageDataUrl) {
+        body.imageDataUrl = demoCurrentImageDataUrl;
+      }
+      // Try edit if we have a source image, else generate
+      const endpoint = demoCurrentImageDataUrl ? '/api/reve/edit' : '/api/reve/generate';
+
+      // Since this is a standalone HTML file (no Next.js), call Reve directly
+      let dataUrl = await callReve(prompt, demoCurrentImageDataUrl);
+
+      demoCurrentImageDataUrl = dataUrl;
+      demoEditHistory.push(prompt);
+
+      const img = document.getElementById('demoImage');
+      img.src = dataUrl;
+      img.style.display = 'block';
+      img.className = 'fade-in';
+      void img.offsetWidth; // reflow to restart animation
+
+      const history = document.getElementById('demoHistory');
+      history.style.display = 'block';
+      history.innerHTML = demoEditHistory.slice(-2).map(e => `<div class="entry">↳ ${e}</div>`).join('');
+    } catch(err) {
+      const errEl = document.getElementById('demoError');
+      errEl.textContent = 'error: ' + (err.message || 'generation failed');
+      errEl.style.display = 'block';
+      document.getElementById('demoImage').style.display = 'block';
+    } finally {
+      stopSpin();
+      document.getElementById('demoLoading').style.display = 'none';
+      demoIsLoading = false;
+      document.getElementById('demoBtn').disabled = !apiKey;
+    }
+  }
+
+  // ── Reve API caller (direct from browser) ─────────────────────────────
+  async function callReve(prompt, sourceDataUrl) {
+    if (!apiKey) throw new Error('no API key');
+
+    // If we have a source image and want to edit, use edit endpoint
+    // Otherwise use create
+    if (sourceDataUrl) {
+      // Strip data prefix
+      const base64 = sourceDataUrl.startsWith('data:') ? sourceDataUrl.split(',')[1] : sourceDataUrl;
+
+      const res = await fetch('https://api.reve.com/v1/image/edit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`,
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({ prompt, image: base64, version: 'latest' }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || data.error_code || 'edit failed');
+      if (data.content_violation) throw new Error('content policy violation');
+      return `data:image/png;base64,${data.image}`;
+    } else {
+      const res = await fetch('https://api.reve.com/v1/image/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`,
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({ prompt, aspect_ratio: '1:1', version: 'latest' }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || data.error_code || 'create failed');
+      if (data.content_violation) throw new Error('content policy violation');
+      return `data:image/png;base64,${data.image}`;
+    }
+  }
+
+  // ── Spinner ────────────────────────────────────────────────────────────
+  function startSpin(elId) {
+    spinIdx = 0;
+    spinInterval = setInterval(() => {
+      document.getElementById(elId).textContent = spinFrames[spinIdx++ % spinFrames.length];
+    }, 80);
+  }
+  function stopSpin() {
+    clearInterval(spinInterval);
+    spinInterval = null;
+  }
+
+  // ── Canvas: selection ─────────────────────────────────────────────────
+  const canvasCenter = document.getElementById('canvasCenter');
+
+  function getRelativePos(e) {
+    const rect = canvasCenter.getBoundingClientRect();
+    return {
+      x: Math.max(0, Math.min(100, (e.clientX - rect.left) / rect.width * 100)),
+      y: Math.max(0, Math.min(100, (e.clientY - rect.top) / rect.height * 100)),
+    };
+  }
+
+  canvasCenter.addEventListener('mousedown', (e) => {
+    if (e.target.closest('[data-annotation]')) return;
+    const pos = getRelativePos(e);
+    isSelecting = true;
+    selStart = pos;
+    pendingSelection = null;
+    closeEditPanel();
+    canvasPreviewDataUrl = null;
+    renderSelBox(pos.x, pos.y, 0, 0);
+  });
+
+  canvasCenter.addEventListener('mousemove', (e) => {
+    if (!isSelecting || !selStart) return;
+    const pos = getRelativePos(e);
+    const x = Math.min(pos.x, selStart.x);
+    const y = Math.min(pos.y, selStart.y);
+    const w = Math.abs(pos.x - selStart.x);
+    const h = Math.abs(pos.y - selStart.y);
+    renderSelBox(x, y, w, h);
+  });
+
+  canvasCenter.addEventListener('mouseup', (e) => {
+    if (!isSelecting) return;
+    isSelecting = false;
+    const pos = getRelativePos(e);
+    const x = Math.min(pos.x, selStart.x);
+    const y = Math.min(pos.y, selStart.y);
+    const w = Math.abs(pos.x - selStart.x);
+    const h = Math.abs(pos.y - selStart.y);
+    clearSelBox();
+    if (w > 3 && h > 3) {
+      pendingSelection = { x, y, w, h };
+      openEditPanel('new', 'selected region');
+      renderPendingBox(x, y, w, h);
+    }
+  });
+
+  canvasCenter.addEventListener('mouseleave', () => {
+    if (isSelecting) { isSelecting = false; clearSelBox(); }
+  });
+
+  let selBoxEl = null;
+  let pendingBoxEl = null;
+
+  function renderSelBox(x, y, w, h) {
+    if (!selBoxEl) {
+      selBoxEl = document.createElement('div');
+      selBoxEl.className = 'sel-box';
+      selBoxEl.id = 'selBox';
+      canvasCenter.appendChild(selBoxEl);
+    }
+    selBoxEl.style.cssText = `left:${x}%;top:${y}%;width:${w}%;height:${h}%;position:absolute;border:1px dashed var(--accent);background:rgba(232,224,212,0.06);pointer-events:none;`;
+  }
+
+  function clearSelBox() {
+    if (selBoxEl) { selBoxEl.remove(); selBoxEl = null; }
+  }
+
+  function renderPendingBox(x, y, w, h) {
+    if (pendingBoxEl) pendingBoxEl.remove();
+    pendingBoxEl = document.createElement('div');
+    pendingBoxEl.style.cssText = `position:absolute;left:${x}%;top:${y}%;width:${w}%;height:${h}%;border:1px dashed var(--accent);background:rgba(232,224,212,0.08);pointer-events:none;`;
+    canvasCenter.appendChild(pendingBoxEl);
+  }
+
+  function clearPendingBox() {
+    if (pendingBoxEl) { pendingBoxEl.remove(); pendingBoxEl = null; }
+  }
+
+  // ── Canvas: annotations ───────────────────────────────────────────────
+  function renderAnnotations() {
+    const layer = document.getElementById('annotationLayer');
+    layer.innerHTML = '';
+    annotations.forEach(ann => {
+      const box = document.createElement('div');
+      box.className = 'annotation-box' + (activeAnnotationId === ann.id ? ' active' : '');
+      box.setAttribute('data-annotation', ann.id);
+      box.style.cssText = `left:${ann.x}%;top:${ann.y}%;width:${ann.w}%;height:${ann.h}%;position:absolute;`;
+      box.innerHTML = `<div class="ann-chip">${ann.label}</div>`;
+      box.addEventListener('click', (e) => {
+        e.stopPropagation();
+        activeAnnotationId = ann.id;
+        clearPendingBox();
+        pendingSelection = null;
+        canvasPreviewDataUrl = null;
+        openEditPanel(ann.id, ann.label);
+        document.getElementById('editTextarea').value = ann.text;
+        renderAnnotations();
+      });
+      layer.appendChild(box);
+    });
+  }
+
+  function renderAnnotationList() {
+    const list = document.getElementById('annotationList');
+    list.innerHTML = annotations.map(ann => `
+      <div class="ann-item" onclick="clickAnnItem('${ann.id}')">
+        <div class="ann-label">[${ann.label}]</div>
+        <div class="ann-text">"${ann.text.slice(0,70)}${ann.text.length>70?'…':''}"</div>
+        ${ann.previewDataUrl ? '<div class="ann-accepted">→ visual edit</div>' : ''}
+      </div>`).join('');
+  }
+
+  function clickAnnItem(id) {
+    activeAnnotationId = id;
+    clearPendingBox();
+    pendingSelection = null;
+    canvasPreviewDataUrl = null;
+    const ann = annotations.find(a => a.id === id);
+    openEditPanel(id, ann.label);
+    document.getElementById('editTextarea').value = ann.text;
+    renderAnnotations();
+  }
+
+  // ── Edit panel ────────────────────────────────────────────────────────
+  function openEditPanel(annId, label) {
+    activeAnnotationId = annId;
+    document.getElementById('editPanelLabel').textContent = `[${label}]`;
+    document.getElementById('editPanel').classList.add('open');
+    document.getElementById('editError').style.display = 'none';
+    document.getElementById('previewActions').style.display = 'none';
+    document.getElementById('previewOverlay').style.display = 'none';
+    canvasPreviewDataUrl = null;
+  }
+
+  function closeEditPanel() {
+    activeAnnotationId = null;
+    clearPendingBox();
+    pendingSelection = null;
+    document.getElementById('editPanel').classList.remove('open');
+    document.getElementById('editTextarea').value = '';
+    document.getElementById('editError').style.display = 'none';
+    document.getElementById('previewOverlay').style.display = 'none';
+    canvasPreviewDataUrl = null;
+    renderAnnotations();
+  }
+
+  // ── Canvas generate ───────────────────────────────────────────────────
+  async function generateCanvasPreview() {
+    const text = document.getElementById('editTextarea').value.trim();
+    if (!text || canvasGenerating) return;
+    if (!apiKey) {
+      document.getElementById('editError').textContent = 'paste your API key in the banner above';
+      document.getElementById('editError').style.display = 'block';
+      return;
+    }
+
+    canvasGenerating = true;
+    document.getElementById('editError').style.display = 'none';
+    document.getElementById('editGenBtn').textContent = '⠋ generating preview';
+    document.getElementById('editGenBtn').disabled = true;
+
+    const spinEl = document.getElementById('editGenBtn');
+    let si = 0;
+    const spinTimer = setInterval(() => { spinEl.textContent = `${spinFrames[si++%spinFrames.length]} generating preview`; }, 80);
+
+    try {
+      // Use the canvas artwork as the source image
+      const canvasImgSrc = document.getElementById('canvasImage').src;
+      // If it's an unsplash URL we pass the prompt only (create mode)
+      // If it's a data URL it's been generated by Reve before
+      const sourceDataUrl = canvasImgSrc.startsWith('data:') ? canvasImgSrc : null;
+      const dataUrl = await callReve(text, sourceDataUrl);
+      canvasPreviewDataUrl = dataUrl;
+
+      // Show preview overlay
+      document.getElementById('previewImg').src = dataUrl;
+      document.getElementById('previewOverlay').style.display = 'flex';
+      document.getElementById('previewActions').style.display = 'flex';
+    } catch(err) {
+      document.getElementById('editError').textContent = err.message || 'generation failed';
+      document.getElementById('editError').style.display = 'block';
+    } finally {
+      clearInterval(spinTimer);
+      canvasGenerating = false;
+      document.getElementById('editGenBtn').textContent = 'generate preview →';
+      document.getElementById('editGenBtn').disabled = false;
+    }
+  }
+
+  function acceptPreview() {
+    const text = document.getElementById('editTextarea').value.trim();
+    if (activeAnnotationId === 'new' && pendingSelection) {
+      const newAnn = {
+        id: 'a' + Date.now(),
+        x: pendingSelection.x,
+        y: pendingSelection.y,
+        w: pendingSelection.w,
+        h: pendingSelection.h,
+        label: 'selected region',
+        text,
+        status: 'pending',
+        previewDataUrl: canvasPreviewDataUrl,
+      };
+      annotations.push(newAnn);
+    } else if (activeAnnotationId) {
+      annotations = annotations.map(a =>
+        a.id === activeAnnotationId ? { ...a, text, previewDataUrl: canvasPreviewDataUrl || a.previewDataUrl } : a
+      );
+    }
+    closeEditPanel();
+    clearPendingBox();
+    renderAnnotations();
+    renderAnnotationList();
+    document.getElementById('previewOverlay').style.display = 'none';
+    canvasPreviewDataUrl = null;
+  }
+
+  function discardPreview() {
+    document.getElementById('previewOverlay').style.display = 'none';
+    document.getElementById('previewActions').style.display = 'none';
+    canvasPreviewDataUrl = null;
+  }
+
+  // ── Textarea edit gen (enter key) ─────────────────────────────────────
+  document.getElementById('editTextarea').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && e.metaKey) generateCanvasPreview();
+  });
+</script>
+</body>
+</html>

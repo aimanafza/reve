@@ -9,8 +9,22 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: "var(--background)",
-        foreground: "var(--foreground)",
+        bg: "var(--bg)",
+        surface: "var(--surface)",
+        border: "var(--border)",
+        primary: "var(--text-primary)",
+        secondary: "var(--text-secondary)",
+        accent: "var(--accent)",
+        danger: "var(--danger)",
+        success: "var(--success)",
+      },
+      fontFamily: {
+        display: ["'Cormorant Garamond'", "serif"],
+        body: ["'DM Sans'", "sans-serif"],
+        mono: ["'JetBrains Mono'", "monospace"],
+      },
+      transitionTimingFunction: {
+        "out-expo": "cubic-bezier(0.16, 1, 0.3, 1)",
       },
     },
   },
