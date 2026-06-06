@@ -27,7 +27,7 @@ export default function LandingPage() {
           reveal
         </span>
         <button
-          onClick={() => router.push("/revealsion/demo")}
+          onClick={() => router.push("/commission/demo")}
           style={{
             border: "0.5px solid var(--text-primary)",
             background: "transparent",
@@ -99,7 +99,7 @@ export default function LandingPage() {
           Sewing only starts when you&apos;re certain.
         </p>
         <button
-          onClick={() => router.push("/revealsion/demo")}
+          onClick={() => router.push("/commission/demo")}
           style={{
             background: "var(--text-primary)",
             color: "var(--bg)",
